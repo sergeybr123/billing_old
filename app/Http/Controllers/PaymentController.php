@@ -8,6 +8,8 @@ use App\Invoice;
 use App\Subscribe;
 use App\Plan;
 
+use Illuminate\Support\Facades\Storage;
+
 use Carbon\Carbon;
 
 class PaymentController extends Controller
@@ -122,58 +124,77 @@ class PaymentController extends Controller
 
     public function pays(Request $request)
     {
-        $invoice = Invoice::where('id', $request->InvoiceId)->first();
+        $code = 1;
 
-        if($invoice->amount == $request->Amount) {
-            CPLog::updateOrCreate([
-                'invoice_id' => $request->InvoiceId,
-                'transaction_id' => $request->TransactionId,
-                'currency' => $request->Currency,
-                'cardFirstSix' => $request->CardFirstSix,
-                'cardLastFour' => $request->CardLastFour,
-                'cardType' => $request->CardType,
-                'name' => $request->Name,
-                'email' => $request->Email,
-                'issuer' => $request->Issuer,
-                'token' => $request->Token,
-            ]);
-            $invoice->paid = true;
-            $invoice->paid_at = $request->DateTime;
-            $invoice->save();
-            if($invoice->type_id == 1) {
-                $subscribe = Subscribe::where('user_id', $invoice->user_id)->first();
-                $interval = $subscribe->interval;
-                $end = Carbon::parse($subscribe->end_at);
-                if($interval == 'month') {
-                    $dt = Carbon::parse($subscribe->end_at)->addMonth();
+        if(strlen($request->InvoiceId) <6) {
+            Storage::put($request->InvoiceId.'.txt', $request);
+            $code = 0;
+        } else {
+            $invoice = Invoice::findOrFail($request->InvoiceId);
+
+            if($invoice->amount == $request->Amount) {
+                CPLog::updateOrCreate([
+                    'invoice_id' => $request->InvoiceId,
+                    'transaction_id' => $request->TransactionId,
+                    'currency' => $request->Currency,
+                    'cardFirstSix' => $request->CardFirstSix,
+                    'cardLastFour' => $request->CardLastFour,
+                    'cardType' => $request->CardType,
+                    'name' => $request->Name,
+                    'email' => $request->Email,
+                    'issuer' => $request->Issuer,
+                    'token' => $request->Token,
+                ]);
+                $invoice->paid = true;
+                $invoice->paid_at = $request->DateTime;
+                $invoice->save();
+                if($invoice->type_id == 1) {
+                    $subscribe = Subscribe::where('user_id', $invoice->user_id)->first();
+                    $interval = $subscribe->interval;
+                    if($interval == 'month') {
+                        $dt = Carbon::parse($subscribe->end_at)->addMonth();
+                    }
+                    if($interval == 'year') {
+                        $dt = Carbon::parse($subscribe->end_at)->addYear();
+                    }
+                    $subscribe->end_at = $dt;
+                    $subscribe->active = true;
+                    $subscribe->save();
                 }
-                if($interval == 'year') {
-                    $dt = Carbon::parse($subscribe->end_at)->addYear();
+                if($invoice->type_id == 2) {
+                    $subscribe = Subscribe::where('user_id', $invoice->user_id)->first();
+                    $plan = Plan::find($invoice->plan_id);
+                    $now = Carbon::now();
+                    if($plan->interval == 'month') {
+                        $dt = Carbon::now()->addMonth();
+                    }
+                    if($plan->interval == 'year') {
+                        $dt = Carbon::now()->addYear();
+                    }
+                    $subscribe->plan_id = $plan->id;
+                    $subscribe->interval = $plan->interval;
+                    $subscribe->start_at = $now;
+                    $subscribe->end_at = $dt;
+                    $subscribe->active = true;
+                    $subscribe->save();
                 }
-                $subscribe->start_at = $end;
-                $subscribe->end_at = $dt;
-                $subscribe->active = true;
-                $subscribe->save();
-            }
-            if($invoice->type_id == 2) {
-                $subscribe = Subscribe::where('user_id', $invoice->user_id)->first();
-                $plan = Plan::find($invoice->plan_id);
-                $now = Carbon::now();
-                if($plan->interval == 'month') {
-                    $dt = Carbon::now()->addMonth();
-                }
-                if($plan->interval == 'year') {
-                    $dt = Carbon::now()->addYear();
-                }
-                $subscribe->plan_id = $plan->id;
-                $subscribe->interval = $plan->interval;
-                $subscribe->start_at = $now;
-                $subscribe->end_at = $dt;
-                $subscribe->active = true;
-                $subscribe->save();
+                $code = 0;
             }
         }
 
-        return ['error' => 0];
+        return response()->json(['error' => $code]);
+    }
+
+    public function payWithDay(Request $request)
+    {
+        $invoice = Invoice::find($request->id);
+        if($invoice) {
+            $invoice->paid = 1;
+            $invoice->paid_at = $request->date;
+            $invoice->save();
+            return response()->json(['error' => 0]);
+        } else {
+            return response()->json(['error' => 1]);
+        }
     }
 }

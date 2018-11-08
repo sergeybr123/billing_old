@@ -3,17 +3,6 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-/*
-|--------------------------------------------------------------------------
-| API Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register API routes for your application. These
-| routes are loaded by the RouteServiceProvider within a group which
-| is assigned the "api" middleware group. Enjoy building your API!
-|
-*/
-
 Route::post('login', 'API\UserController@login');
 //Route::post('register', 'API\UserController@register');
 
@@ -44,5 +33,13 @@ Route::middleware('auth.basic')->group(function () {
     Route::get('invoice-count', 'InvoicesController@countInvoice');                                                     // Возврат integer числа счетов
 
     Route::resource('pays', 'PaymentController');                                                                   // Обработка ответа от CloudPayment
-    Route::match(['get', 'post'], 'pay', 'PaymentController@pays');                                                                       // Обработка ответа от CloudPayment
+
+    Route::post('activate', 'ActivateController@activate');                                                             // Ставить оплачено и активировать подписку по данному чеку
+
+    Route::match(['get', 'post'], 'pay', 'PaymentController@pays');                                                     // Обработка ответа от CloudPayment
+    Route::match(['get', 'post'], 'pay-with-day', 'PaymentController@payWithDay');                                      // Подтверждение платежа от менеджера
 });
+
+
+
+

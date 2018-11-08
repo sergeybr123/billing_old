@@ -16,7 +16,7 @@ class InvoicesController extends Controller
      */
     public function index()
     {
-        return InvoiceModel::with('types')->orderBy('id', 'desc')->paginate(500);//InvoiceModel::with('types')->orderBy('id', 'desc')->paginate(30));
+        return InvoiceModel::with('types')->orderBy('id', 'desc')->paginate(20);//InvoiceModel::with('types')->orderBy('id', 'desc')->paginate(30));
     }
 
     /**
