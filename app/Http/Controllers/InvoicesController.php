@@ -16,7 +16,7 @@ class InvoicesController extends Controller
      */
     public function index()
     {
-        return InvoiceModel::with('types')->orderBy('id', 'desc')->paginate(20);//InvoiceModel::with('types')->orderBy('id', 'desc')->paginate(30));
+        return InvoiceResource::collection(InvoiceModel::orderBy('id', 'desc')->paginate(20));//InvoiceModel::with('types')->orderBy('id', 'desc')->paginate(30));
     }
 
     /**
@@ -119,7 +119,7 @@ class InvoicesController extends Controller
     // Получаем все счета по ИД пользователя
     public function userInvoice($id)
     {
-        return InvoiceModel::where('user_id', $id)->with('types')->with('plan')->with('service')->orderBy('id', 'desc')->get();
+        return InvoiceResource::collection(InvoiceModel::where('user_id', $id)->orderBy('id', 'desc')->paginate(20));
     }
 
     // Общее количество счетов

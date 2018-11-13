@@ -31,7 +31,7 @@ class ActivateController extends Controller
         $subscribe->start_at = $date;
         if($plan->interval == 'month') {
             $subscribe->end_at = Carbon::parse($date)->addMonth();
-        } else {
+        } elseif($plan->interval == 'year') {
             $subscribe->end_at = Carbon::parse($date)->addYear();
         }
         $subscribe->active = true;

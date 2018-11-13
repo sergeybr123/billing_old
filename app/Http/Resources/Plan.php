@@ -5,6 +5,7 @@ namespace App\Http\Resources;
 use Illuminate\Http\Resources\Json\JsonResource;
 use App\Http\Resources\PlanFeaturesCollection;
 use App\Http\Resources\FeatureCollection;
+use Carbon\Carbon;
 
 class Plan extends JsonResource
 {
@@ -28,8 +29,8 @@ class Plan extends JsonResource
             'sort_order' => $this->sort_order,
             'on_show' => $this->on_show,
             'active' => $this->active,
-            'created_at' => $this->created_at,
-            'updated_at' => $this->created_at ? $this->created_at->toDateTimeString() : null,
+            'created_at' => $this->created_at ? Carbon::parse($this->created_at)->toDateTimeString() : null,
+            'updated_at' => $this->updated_at ? Carbon::parse($this->updated_at)->toDateTimeString() : null,
             'features' => $this->features,
         ];
     }
