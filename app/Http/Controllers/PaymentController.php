@@ -151,11 +151,21 @@ class PaymentController extends Controller
                 if($invoice->type_id == 1) {
                     $subscribe = Subscribe::where('user_id', $invoice->user_id)->first();
                     $interval = $subscribe->interval;
-                    if($interval == 'month') {
-                        $dt = Carbon::parse($subscribe->end_at)->addMonth();
-                    }
-                    if($interval == 'year') {
-                        $dt = Carbon::parse($subscribe->end_at)->addYear();
+                    if(Carbon::parse($subscribe->end_at)->format('d.m.Y') < Carbon::parse($request->DateTime)->format('d.m.Y')) {
+                        $invoice->start_at = Carbon::now();
+                        if($interval == 'month') {
+                            $dt = Carbon::now()->addMonth();
+                        }
+                        if($interval == 'year') {
+                            $dt = Carbon::now()->addYear();
+                        }
+                    } else {
+                        if($interval == 'month') {
+                            $dt = Carbon::parse($subscribe->end_at)->addMonth();
+                        }
+                        if($interval == 'year') {
+                            $dt = Carbon::parse($subscribe->end_at)->addYear();
+                        }
                     }
                     $subscribe->end_at = $dt;
                     $subscribe->active = true;
