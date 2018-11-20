@@ -49,7 +49,6 @@ class ActivateController extends Controller
     public function set_not_active()
     {
         $subscribes = Subscribe::where('end_at', '<=', Carbon::today())->where('active', 1)->get();
-//        return response()->json(['error' => 0, 'subscribes' => $subscribes]);
         foreach ($subscribes as $subscribe) {
             $subscribe->active = 0;
             $subscribe->save();
