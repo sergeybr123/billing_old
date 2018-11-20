@@ -116,6 +116,6 @@ class PlanController extends Controller
 
     public function all()
     {
-        return PlanResource::collection(Plan::all());
+        return PlanResource::collection(Plan::orderBy('sort_order')->get());
     }
 }

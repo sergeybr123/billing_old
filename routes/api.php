@@ -41,6 +41,7 @@ Route::middleware('auth.basic')->group(function () {
 
     Route::get('set-not-active', 'ActivateController@setStatus');                                                       // Меняем статус у неактивных подписок
     Route::get('end-active/{day}', 'ActivateController@getSubscribeEndOfDay');                                          // Получаем список подписок которые завершатся через *n дней
+    Route::get('set-not-active', 'ActivateController@set_not_active');
 });
 
 
